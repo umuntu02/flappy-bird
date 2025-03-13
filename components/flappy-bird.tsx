@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 const GRAVITY = 0.5;
-const JUMP_STRENGTH = 7;
-const PIPE_WIDTH = 70;
+const JUMP_STRENGTH = 10;
+const PIPE_WIDTH = 52;
 const PIPE_GAP = 150;
 const PIPE_SPEED = 2;
 const BIRD_WIDTH = 34;
@@ -215,8 +215,7 @@ export default function FlappyBird() {
         pipes.length === 0 ||
         pipes[pipes.length - 1].x < canvas.width - 200
       ) {
-        const topHeight =
-          Math.random() * (canvas.height - PIPE_GAP - 300) + 150;
+        const topHeight = Math.random() * (canvas.height - PIPE_GAP - 100) + 50;
         setPipes((prevPipes) => [...prevPipes, { x: canvas.width, topHeight }]);
       }
 
@@ -411,12 +410,12 @@ export default function FlappyBird() {
   );
 
   return (
-    <div className="flex max-w-screen flex-col items-center justify-center bg-gray-100 sm:max-w-none">
+    <div className="flex flex-col items-center justify-center bg-gray-100">
       <canvas
         ref={canvasRef}
-        width={350}
-        height={600}
-        className="border border-blue-950"
+        width={288}
+        height={512}
+        className="border border-gray-300"
         onClick={handleCanvasClick}
       />
     </div>
