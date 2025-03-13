@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const GRAVITY = 0.5;
 const JUMP_STRENGTH = 10;
@@ -157,6 +158,54 @@ export default function FlappyBird() {
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [jump, gameStarted, gameOver]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      if (gameOver) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
+        // Check if touch is within Restart button area
+        if (
+          x >= canvas.width / 2 - 50 &&
+          x <= canvas.width / 2 + 50 &&
+          y >= canvas.height / 2 + 50 &&
+          y <= canvas.height / 2 + 90
+        ) {
+          restartGame();
+        }
+      } else {
+        if (!gameStarted) {
+          setGameStarted(true);
+        } else {
+          jump();
+        }
+      }
+    };
+
+    canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
+    return () => canvas.removeEventListener("touchstart", handleTouchStart);
+  }, [jump, gameStarted, gameOver, restartGame]);
+
+  useEffect(() => {
+    const preventDefaultTouchMove = (e: TouchEvent) => {
+      if (gameStarted) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("touchmove", preventDefaultTouchMove, {
+      passive: false,
+    });
+    return () =>
+      document.removeEventListener("touchmove", preventDefaultTouchMove);
+  }, [gameStarted]);
 
   useEffect(() => {
     if (!assetsLoaded) return;
@@ -324,7 +373,7 @@ export default function FlappyBird() {
       const totalWidth = scoreString.length * digitWidth;
       const startX = (canvas.width - totalWidth) / 2;
       scoreString.split("").forEach((digit, index) => {
-        const digitImage = numberSprites.current[parseInt(digit)];
+        const digitImage = numberSprites.current[Number.parseInt(digit)];
         if (digitImage) {
           ctx.drawImage(
             digitImage,
@@ -410,14 +459,19 @@ export default function FlappyBird() {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center bg-gray-100">
-      <canvas
-        ref={canvasRef}
-        width={288}
-        height={512}
-        className="border border-gray-300"
-        onClick={handleCanvasClick}
-      />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <div className="relative w-full max-w-[288px] touch-none">
+        <canvas
+          ref={canvasRef}
+          width={288}
+          height={512}
+          className="border border-gray-300 w-full h-auto touch-none"
+          onClick={handleCanvasClick}
+        />
+      </div>
+      <p className="mt-4 text-lg text-center">
+        Tap to jump or press Space on desktop
+      </p>
     </div>
   );
 }
